@@ -136,6 +136,13 @@ Then open: http://localhost:3000
 
 ---
 
+## Limitations
+
+This version uses a simplified scoring model and simulated inputs.
+Future iterations will integrate real repository data and CI/CD pipelines.
+
+---
+
 ## Roadmap
 
 - GitHub / GitLab integrations  
