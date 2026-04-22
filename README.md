@@ -5,11 +5,11 @@
 
 # Qualioro
 
-AI-powered software quality intelligence for teams that care about what they ship.
+AI-powered software quality intelligence — from metrics to actionable insight in seconds.
 
 Qualioro helps you understand your code quality in seconds — not just with a score, but with clear, explainable insights on what’s actually going wrong and what to fix next.
 
-Live Demo: https://qualioro.vercel.app/
+[Live Demo](https://qualioro.vercel.app/)
 
 ---
 ## Product Preview
@@ -36,12 +36,21 @@ Live Demo: https://qualioro.vercel.app/
 
 Most teams don’t lack effort — they lack visibility.
 
+
 Codebases grow, deadlines shrink, and quality becomes something you “feel” instead of measure. That’s where problems start: hidden bugs, rising complexity, unstable releases.
 
 Qualioro turns that ambiguity into something concrete:
 - A clear quality score
 - A visible risk level
 - A breakdown of what’s actually driving issues
+
+---
+
+## Design philosophy
+
+Qualioro is built around one idea: clarity over complexity.
+
+Instead of overwhelming teams with metrics, it focuses on a small set of signals that actually drive quality — and turns them into clear, actionable insights.
 
 ---
 
@@ -81,7 +90,7 @@ Advanced mode exposes the full scoring breakdown for transparency.
 
 ## Architecture (simplified)
 
-Input Metrics → Scoring Engine → Analysis Layer → UI
+Input Metrics → Scoring Engine → Insight Layer → Interactive UI
 
 Everything runs client-side. No data is sent or stored externally.
 
@@ -89,7 +98,7 @@ Everything runs client-side. No data is sent or stored externally.
 
 ## Tech stack
 
-- Next.js (App Router)
+- Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
@@ -113,6 +122,7 @@ git clone https://github.com/Fadydesoky/Qualioro.git
 npm install
 npm run dev
 ```
+Then open: http://localhost:3000
 
 ---
 
@@ -144,5 +154,5 @@ https://github.com/Fadydesoky
 ---
 
 <p align="center">
-  <strong>Better visibility. Better decisions. Better code.</strong>
+  <strong>Ship with clarity.</strong>
 </p>
