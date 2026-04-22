@@ -1,16 +1,13 @@
 "use client"
 
+import Link from "next/link"
 import { ArrowRight, Code2, Gauge, LineChart, Sparkles, Users, Building2, Rocket, CheckCircle2, Zap, Shield, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-interface LandingHeroProps {
-  onGetStarted: () => void
-}
-
-export function LandingHero({ onGetStarted }: LandingHeroProps) {
+export function LandingHero() {
   return (
     <div className="relative">
       {/* Hero Section */}
@@ -41,17 +38,21 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button 
                 size="lg" 
-                onClick={onGetStarted}
+                asChild
                 className="h-12 px-8 text-base gap-2 shadow-lg shadow-primary/20"
               >
-                Analyze My Project
-                <ArrowRight className="h-4 w-4" />
+                <Link href="/analyze">
+                  Analyze My Project
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </Button>
               <Button 
                 variant="outline" 
                 size="lg"
                 className="h-12 px-8 text-base"
-                onClick={onGetStarted}
+                onClick={() => {
+                  document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 See How It Works
               </Button>
@@ -76,7 +77,7 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 sm:py-28 border-b border-border/40">
+      <section id="how-it-works" className="py-20 sm:py-28 border-b border-border/40 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-4">How It Works</Badge>
@@ -136,8 +137,8 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
         </div>
       </section>
 
-      {/* Who Is This For Section */}
-      <section className="py-20 sm:py-28 border-b border-border/40 bg-muted/30">
+      {/* Features / Who Is This For Section */}
+      <section id="features" className="py-20 sm:py-28 border-b border-border/40 bg-muted/30 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-2xl text-center">
             <Badge variant="outline" className="mb-4">Who Is This For</Badge>
@@ -197,8 +198,8 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
         </div>
       </section>
 
-      {/* Real-World Example Section */}
-      <section className="py-20 sm:py-28">
+      {/* Real-World Example / Use Cases Section */}
+      <section id="use-cases" className="py-20 sm:py-28 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-2xl text-center mb-16">
             <Badge variant="outline" className="mb-4">Real-World Example</Badge>
@@ -326,11 +327,13 @@ export function LandingHero({ onGetStarted }: LandingHeroProps) {
           <div className="mt-16 text-center">
             <Button 
               size="lg" 
-              onClick={onGetStarted}
+              asChild
               className="h-12 px-8 text-base gap-2 shadow-lg shadow-primary/20"
             >
-              Start Your Analysis
-              <ArrowRight className="h-4 w-4" />
+              <Link href="/analyze">
+                Start Your Analysis
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
           </div>
         </div>
