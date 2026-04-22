@@ -21,6 +21,7 @@ import { FormulaDisplay } from "@/components/formula-display"
 import { TrendIntelligence } from "@/components/trend-intelligence"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ConfidenceBadge } from "@/components/confidence-badge"
+import { ContributionChart } from "@/components/contribution-chart"
 import { 
   predictQuality, 
   validateInputs,
@@ -30,7 +31,8 @@ import {
   type PredictionResult, 
   type HistoryEntry 
 } from "@/lib/prediction"
-import { Activity } from "lucide-react"
+import { Activity, Sparkles } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -122,16 +124,25 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-foreground to-foreground/80 shadow-sm">
               <Activity className="h-5 w-5 text-background" />
+              <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500">
+                <Sparkles className="h-2.5 w-2.5 text-white" />
+              </div>
             </div>
-            <span className="text-lg font-semibold tracking-tight">Quality Predictor</span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold tracking-tight">Quality Predictor</span>
+              <Badge variant="secondary" className="hidden sm:flex text-[10px] font-medium">
+                v2.0
+              </Badge>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ModeToggle isAdvanced={isAdvancedMode} onToggle={setIsAdvancedMode} />
+            <div className="h-6 w-px bg-border/50" />
             <ThemeToggle />
           </div>
         </div>
@@ -227,8 +238,15 @@ function DashboardContent() {
               </div>
             )}
             
-            {/* Score Breakdown */}
+            {/* Contribution Chart (Visual Breakdown) */}
             {result && (
+              <div className="animate-fade-in">
+                <ContributionChart breakdown={result.breakdown} />
+              </div>
+            )}
+
+            {/* Score Breakdown (Detailed) */}
+            {result && isAdvancedMode && (
               <div className="animate-fade-in">
                 <ScoreBreakdownCard breakdown={result.breakdown} />
               </div>
@@ -287,9 +305,21 @@ function DashboardContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-8 mt-16">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-muted-foreground">
-          Built for engineering teams - {isAdvancedMode ? "Advanced" : "Simple"} Mode
+      <footer className="border-t border-border/40 py-10 mt-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
+                <Activity className="h-3.5 w-3.5 text-background" />
+              </div>
+              <span className="text-sm font-medium">Quality Predictor</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Built for engineering teams
+              <span className="mx-2 text-border">|</span>
+              {isAdvancedMode ? "Advanced Analytics" : "Simple Mode"}
+            </p>
+          </div>
         </div>
       </footer>
     </div>
