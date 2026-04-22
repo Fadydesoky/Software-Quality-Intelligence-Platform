@@ -3,7 +3,9 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 
-# generate data
+# -------------------------------
+# Generating realistic dataset
+# -------------------------------
 np.random.seed(42)
 n = 500
 
@@ -19,6 +21,9 @@ data["bugs"] = (data["complexity"] * np.random.randint(5, 15, n)) + np.random.ra
 data["coverage"] = 100 - (data["complexity"] * np.random.randint(3, 8, n)) + np.random.randint(-5, 5, n)
 data["coverage"] = data["coverage"].clip(10, 100)
 
+# -------------------------------
+# Feature Engineering
+# -------------------------------
 data["bug_density"] = data["bugs"] / data["commits"]
 data["productivity"] = data["commits"] / data["developers"]
 
@@ -38,22 +43,26 @@ def classify_risk(score):
 
 data["risk"] = data["risk_score"].apply(classify_risk)
 
-# training
+# -------------------------------
+# Model Training
+# -------------------------------
 X = data.drop(["risk", "risk_score"], axis=1)
 y = data["risk"]
 
 le = LabelEncoder()
 y_encoded = le.fit_transform(y)
 
-model = RandomForestClassifier()
+model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X, y_encoded)
 
-# prediction function
+# -------------------------------
+# Prediction Function
+# -------------------------------
 def predict_quality(commits, bugs, complexity, developers, coverage):
-    bug_density = bugs / commits
-    productivity = commits / developers
+    bug_density = bugs / max(commits, 1)
+    productivity = commits / max(developers, 1)
 
-    input_data = pd.DataFrame([{
+    input_df = pd.DataFrame([{
         "commits": commits,
         "bugs": bugs,
         "complexity": complexity,
@@ -63,10 +72,10 @@ def predict_quality(commits, bugs, complexity, developers, coverage):
         "productivity": productivity
     }])
 
-    prediction = model.predict(input_data)
+    prediction = model.predict(input_df)
     model_risk = le.inverse_transform(prediction)[0]
 
-    # Hybrid logic
+    # Hybrid Logic
     if coverage < 50 and bug_density > 0.3:
         final_risk = "High"
     elif coverage < 60:
@@ -74,6 +83,16 @@ def predict_quality(commits, bugs, complexity, developers, coverage):
     else:
         final_risk = model_risk
 
+    # Quality Score (0–100)
+    score = int(
+        max(0, min(100, 100 - (
+            bug_density * 100 +
+            complexity * 5 -
+            coverage * 0.7
+        )))
+    )
+
+    # Explanation
     explanation = []
 
     if coverage < 50:
@@ -82,5 +101,7 @@ def predict_quality(commits, bugs, complexity, developers, coverage):
         explanation.append("High bug density detected")
     if complexity > 7:
         explanation.append("High code complexity")
+    if productivity < 20:
+        explanation.append("Low developer productivity")
 
-    return final_risk, explanation
+    return final_risk, explanation, score
