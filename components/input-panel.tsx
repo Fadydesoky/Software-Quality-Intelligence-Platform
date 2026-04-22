@@ -49,7 +49,7 @@ export function InputPanel({
     }
 
   const handleSliderChange =
-    (field: keyof PredictionInput) => (value: number[]) => {
+    (field: keyof PredictionInput) => (value: number[] | readonly number[]) => {
       onChange({ ...values, [field]: value[0] })
     }
 
