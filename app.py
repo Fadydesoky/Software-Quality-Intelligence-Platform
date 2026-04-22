@@ -1,91 +1,127 @@
 import streamlit as st
-from model import predict_quality
 import pandas as pd
+from model import predict_quality
 
-
-theme = st.toggle("Dark Mode", value=True)
-# -------------------------------
-# Page Config
-# -------------------------------
-st.set_page_config(page_title="AI Software Quality Predictor", layout="centered")
-
-st.title("AI Software Quality Predictor")
-st.markdown("### Predict software risk using AI + Data")
+st.set_page_config(page_title="Software Quality Predictor", layout="wide")
 
 # -------------------------------
-# Inputs
+# Sidebar controls
 # -------------------------------
-col1, col2 = st.columns(2)
+st.sidebar.title("Controls")
 
-with col1:
+theme = st.sidebar.radio("Theme", ["Dark", "Light"], index=0)
+
+if theme == "Dark":
+    bg = "#0e1117"
+    fg = "#ffffff"
+else:
+    bg = "#ffffff"
+    fg = "#000000"
+
+st.markdown(f"""
+<style>
+.stApp {{
+    background-color: {bg};
+    color: {fg};
+}}
+</style>
+""", unsafe_allow_html=True)
+
+st.title("Software Quality Predictor")
+
+# -------------------------------
+# Inputs (main area)
+# -------------------------------
+c1, c2 = st.columns(2)
+
+with c1:
     commits = st.number_input("Commits", 50, 1000, 200)
     bugs = st.number_input("Bugs", 0, 200, 50)
     developers = st.number_input("Developers", 1, 20, 5)
 
-with col2:
+with c2:
     complexity = st.slider("Complexity", 1, 10, 5)
     coverage = st.slider("Test Coverage (%)", 0, 100, 70)
 
+run = st.button("Predict", use_container_width=True)
+
+# session state for history
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 # -------------------------------
-# Prediction Button
+# Prediction
 # -------------------------------
-if st.button("Predict Quality"):
+if run:
+    result = predict_quality(commits, bugs, complexity, developers, coverage)
 
-    risk, explanation, score = predict_quality(
-        commits, bugs, complexity, developers, coverage
-    )
+    st.subheader("Result")
 
-    st.divider()
-
-    # -------------------------------
-    # Risk Display
-    # -------------------------------
-    if risk == "High":
-        st.error(f"🚨 Risk Level: {risk}")
-    elif risk == "Medium":
-        st.warning(f"⚠️ Risk Level: {risk}")
+    if result["risk"] == "High":
+        st.error(f"Risk: {result['risk']}")
+    elif result["risk"] == "Medium":
+        st.warning(f"Risk: {result['risk']}")
     else:
-        st.success(f"✅ Risk Level: {risk}")
+        st.success(f"Risk: {result['risk']}")
 
-    # -------------------------------
-    # Score
-    # -------------------------------
-    st.metric("Quality Score", f"{score}/100")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.metric("Quality Score", f"{result['score']}/100")
+    with col_b:
+        st.progress(result["score"] / 100)
 
-    # -------------------------------
-    # Explanation
-    # -------------------------------
-    st.markdown("### Why?")
-    if explanation:
-        for e in explanation:
-            st.write(f"- {e}")
+    st.markdown("Reasons")
+    if result["reasons"]:
+        for r in result["reasons"]:
+            st.write(f"- {r}")
     else:
-        st.write("✔️ System is healthy")
+        st.write("System looks stable")
 
-    # -------------------------------
-    # Visualization
-    # -------------------------------
-    st.markdown("### Key Metrics")
-
+    # chart
     df = pd.DataFrame({
         "Metric": ["Bugs", "Coverage", "Complexity"],
-        "Value": [bugs, coverage, complexity]
+        "Value": [
+            result["metrics"]["bugs"],
+            result["metrics"]["coverage"],
+            result["metrics"]["complexity"]
+        ]
     })
-
     st.bar_chart(df.set_index("Metric"))
 
-    # -------------------------------
-    # Insights
-    # -------------------------------
-    st.markdown("### Recommendations")
+    # save history
+    st.session_state.history.append({
+        "commits": commits,
+        "bugs": bugs,
+        "complexity": complexity,
+        "developers": developers,
+        "coverage": coverage,
+        "risk": result["risk"],
+        "score": result["score"]
+    })
 
-    if coverage < 60:
-        st.write("• Increase test coverage to reduce risk")
-    if bugs > 50:
-        st.write("• Reduce bugs before next release")
-    if complexity > 7:
-        st.write("• Refactor code to reduce complexity")
+# -------------------------------
+# History panel
+# -------------------------------
+st.divider()
+st.subheader("Prediction History")
 
-    st.divider()
+if st.session_state.history:
+    hist_df = pd.DataFrame(st.session_state.history)
+    st.dataframe(hist_df, use_container_width=True)
 
-    st.caption("🔬 AI-powered software quality intelligence system")
+    # comparison
+    st.subheader("Compare Scenarios")
+
+    idx = list(range(len(hist_df)))
+    c1, c2 = st.columns(2)
+
+    with c1:
+        s1 = st.selectbox("Scenario A", idx, index=0)
+    with c2:
+        s2 = st.selectbox("Scenario B", idx, index=min(1, len(idx)-1))
+
+    if s1 != s2:
+        comp = hist_df.loc[[s1, s2], ["bugs", "coverage", "complexity", "score"]]
+        st.bar_chart(comp.T)
+else:
+    st.write("No runs yet")
