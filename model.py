@@ -35,9 +35,9 @@ q_high = float(data["score"].quantile(0.33))
 q_low = float(data["score"].quantile(0.66))
 
 def score_to_risk(s):
-    if s < q_high:
+    if s < 50:
         return "High"
-    elif s < q_low:
+    elif s < 75:
         return "Medium"
     return "Low"
 
