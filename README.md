@@ -108,10 +108,11 @@ screenshots/   → Product previews
 ---
 
 ## Getting started
-
-Clone the repository, install dependencies, and run the development server.
-
-Then open http://localhost:3000
+```bash
+git clone https://github.com/Fadydesoky/Qualioro.git
+npm install
+npm run dev
+```
 
 ---
 
