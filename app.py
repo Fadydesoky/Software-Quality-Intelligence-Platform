@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from model import predict_quality
 
 st.set_page_config(page_title="Software Quality Predictor", layout="wide")
@@ -119,6 +119,15 @@ if st.session_state.history:
     csv = hist_df.to_csv(index=False).encode("utf-8")
     st.download_button("Export CSV", csv, "history.csv", "text/csv")
 
+    st.subheader("Score Distribution")
+
+    fig, ax = plt.subplots()
+    ax.hist(hist_df["score"], bins=10)
+    ax.set_xlabel("Score")
+    ax.set_ylabel("Frequency")
+
+    st.pyplot(fig)
+
     idx = list(range(len(hist_df)))
     c1, c2 = st.columns(2)
 
@@ -133,14 +142,3 @@ if st.session_state.history:
         st.bar_chart(comp.T)
 else:
     st.write("No runs yet")
-
-
-
-st.subheader("Score Distribution")
-
-fig, ax = plt.subplots()
-ax.hist(hist_df["score"], bins=10)
-ax.set_xlabel("Score")
-ax.set_ylabel("Frequency")
-
-st.pyplot(fig)
