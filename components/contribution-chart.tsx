@@ -180,11 +180,12 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
                   fontSize: 12,
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                formatter={(value: number, name: string, props: { payload: ChartDataItem }) => {
-                  const item = props.payload
+                formatter={(value, _name, props) => {
+                  const item = (props as { payload: ChartDataItem }).payload
+                  const numValue = typeof value === 'number' ? value : 0
                   return [
                     <span key="value" className="font-mono">
-                      {value.toFixed(1)} / {item.maxContribution} pts ({item.percentage}%)
+                      {numValue.toFixed(1)} / {item.maxContribution} pts ({item.percentage}%)
                     </span>,
                     item.name
                   ]
@@ -201,7 +202,7 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
                 <LabelList
                   dataKey="contribution"
                   position="right"
-                  formatter={(v: number) => `+${v.toFixed(1)}`}
+                  formatter={(v) => `+${typeof v === 'number' ? v.toFixed(1) : v}`}
                   style={{ 
                     fontSize: 11, 
                     fontWeight: 600,
