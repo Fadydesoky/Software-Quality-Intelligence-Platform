@@ -22,9 +22,12 @@ data["bug_density"] = data["bugs"] / data["commits"]
 data["productivity"] = data["commits"] / data["developers"]
 
 def compute_score(bd, cx, cv):
-    s = 100 - (bd * 80 + cx * 4 - cv * 0.8)
-    return int(max(0, min(100, s)))
+    bd_score = (1 - min(bd, 1)) * 40       
+    cx_score = (10 - cx) * 3               
+    cv_score = cv * 0.33                
 
+    score = bd_score + cx_score + cv_score
+    return int(max(0, min(100, score)))
 data["score"] = data.apply(lambda r: compute_score(r["bug_density"], r["complexity"], r["coverage"]), axis=1)
 
 # quantile thresholds (auto calibration)
