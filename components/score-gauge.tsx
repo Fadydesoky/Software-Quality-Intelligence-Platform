@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Info, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { Info, TrendingUp, TrendingDown, Sparkles } from "lucide-react"
 
 interface ScoreGaugeProps {
   score: number
@@ -31,6 +31,8 @@ export function ScoreGauge({
 }: ScoreGaugeProps) {
   const [animatedScore, setAnimatedScore] = React.useState(0)
   const [isVisible, setIsVisible] = React.useState(false)
+  const [showScorePop, setShowScorePop] = React.useState(false)
+  const prevScoreRef = React.useRef(score)
   
   const sizeConfig = {
     sm: { width: 120, stroke: 8, fontSize: "text-2xl", labelSize: "text-[10px]" },
@@ -44,13 +46,13 @@ export function ScoreGauge({
   const arcLength = circumference * 0.75 // 270 degrees
   const progress = (animatedScore / 100) * arcLength
 
-  // Animate on mount
+  // Animate on mount and on score change
   React.useEffect(() => {
     setIsVisible(true)
     const timer = setTimeout(() => {
       const duration = 1000
       const startTime = Date.now()
-      const startScore = 0
+      const startScore = prevScoreRef.current !== score ? prevScoreRef.current : 0
       
       const animate = () => {
         const elapsed = Date.now() - startTime
@@ -63,6 +65,13 @@ export function ScoreGauge({
         
         if (progress < 1) {
           requestAnimationFrame(animate)
+        } else {
+          // Show pop animation when complete
+          if (prevScoreRef.current !== score && prevScoreRef.current !== 0) {
+            setShowScorePop(true)
+            setTimeout(() => setShowScorePop(false), 300)
+          }
+          prevScoreRef.current = score
         }
       }
       
@@ -197,26 +206,30 @@ export function ScoreGauge({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className={cn(
             "font-bold tabular-nums transition-all duration-300",
-            config.fontSize
+            config.fontSize,
+            showScorePop && "animate-number"
           )}>
             {animatedScore}
           </div>
           {showLabels && (
-            <span className={cn("text-muted-foreground mt-1", config.labelSize)}>
-              Quality Score
-            </span>
+            <div className="flex items-center gap-1 mt-1">
+              <Sparkles className="h-3 w-3 text-primary/50" />
+              <span className={cn("text-muted-foreground", config.labelSize)}>
+                Quality Score
+              </span>
+            </div>
           )}
           {scoreDiff !== null && scoreDiff !== 0 && (
             <div className={cn(
-              "flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs font-medium",
-              scoreDiff > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"
+              "flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-500 animate-scale-in",
+              scoreDiff > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20" : "bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/20"
             )}>
               {scoreDiff > 0 ? (
-                <TrendingUp className="h-3 w-3" />
+                <TrendingUp className="h-3.5 w-3.5" />
               ) : (
-                <TrendingDown className="h-3 w-3" />
+                <TrendingDown className="h-3.5 w-3.5" />
               )}
-              {scoreDiff > 0 ? "+" : ""}{scoreDiff}
+              {scoreDiff > 0 ? "+" : ""}{scoreDiff} pts
             </div>
           )}
         </div>

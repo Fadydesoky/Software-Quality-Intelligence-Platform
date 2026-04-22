@@ -198,12 +198,44 @@
     transform: scale(0.8);
     opacity: 0;
   }
-  50% {
-    transform: scale(1.05);
+  40% {
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.95);
   }
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes bar-grow {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes highlight-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary), 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(var(--primary), 0.15);
   }
 }
 
@@ -252,6 +284,18 @@
   
   .animate-float {
     animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-bar-grow {
+    animation: bar-grow 0.8s ease-out forwards;
+  }
+  
+  .animate-subtle-pulse {
+    animation: subtle-pulse 2s ease-in-out infinite;
+  }
+  
+  .animate-highlight-glow {
+    animation: highlight-glow 2s ease-in-out infinite;
   }
   
   .glass {

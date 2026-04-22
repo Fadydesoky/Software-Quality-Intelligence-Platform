@@ -2,8 +2,9 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts"
-import { Info, Bug, Code2, TestTube } from "lucide-react"
+import { Info, Bug, Code2, TestTube, AlertTriangle, Crown } from "lucide-react"
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -26,6 +27,7 @@ interface ChartDataItem {
   status: "good" | "warning" | "bad"
   icon: React.ElementType
   value: string
+  isDominant?: boolean
 }
 
 const statusColors = {
@@ -41,7 +43,16 @@ const statusBgColors = {
 }
 
 export function ContributionChart({ breakdown, score }: ContributionChartProps) {
-  const data: ChartDataItem[] = [
+  const [isAnimated, setIsAnimated] = React.useState(false)
+  const [hoveredBar, setHoveredBar] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsAnimated(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Build data and identify dominant (worst performing) factor
+  const rawData = [
     {
       name: "Bug Density",
       contribution: breakdown.bugDensity.contribution,
@@ -74,8 +85,17 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
     },
   ]
 
+  // Find the dominant (worst performing) factor - lowest percentage
+  const sortedByPerformance = [...rawData].sort((a, b) => a.percentage - b.percentage)
+  const dominantFactor = sortedByPerformance[0]
+  const hasDominantIssue = dominantFactor.status !== "good"
+
+  const data: ChartDataItem[] = rawData.map(d => ({
+    ...d,
+    isDominant: hasDominantIssue && d.name === dominantFactor.name,
+  }))
+
   const totalContribution = data.reduce((sum, d) => sum + d.contribution, 0)
-  const totalMax = data.reduce((sum, d) => sum + d.maxContribution, 0)
 
   // Calculate percentage of score each metric contributes
   const contributionPercentages = data.map(d => ({
@@ -84,7 +104,10 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
   }))
 
   return (
-    <Card className="border-border/50 overflow-hidden">
+    <Card className={cn(
+      "border-border/50 overflow-hidden transition-all duration-500",
+      isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+    )}>
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -93,36 +116,71 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
               How each metric impacts your final score
             </p>
           </div>
-          <UITooltip>
-            <TooltipTrigger>
-              <Info className="h-4 w-4 text-muted-foreground/60 cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-[260px] text-xs">
-              Each bar shows how much a metric contributes to the total score. Longer bars = better performance in that area.
-            </TooltipContent>
-          </UITooltip>
+          <div className="flex items-center gap-2">
+            {hasDominantIssue && (
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "text-[10px] font-medium flex items-center gap-1",
+                  dominantFactor.status === "bad" 
+                    ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                )}
+              >
+                <AlertTriangle className="h-3 w-3" />
+                {dominantFactor.name} is Primary Driver
+              </Badge>
+            )}
+            <UITooltip>
+              <TooltipTrigger>
+                <Info className="h-4 w-4 text-muted-foreground/60 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-[260px] text-xs">
+                Each bar shows how much a metric contributes to the total score. Longer bars = better performance in that area.
+              </TooltipContent>
+            </UITooltip>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Stacked Bar Visual */}
+        {/* Stacked Bar Visual with Animation */}
         <div className="space-y-3">
           <div className="flex h-10 w-full overflow-hidden rounded-lg">
             {contributionPercentages.map((item, index) => (
               <UITooltip key={item.name}>
                 <TooltipTrigger
+                    onMouseEnter={() => setHoveredBar(item.name)}
+                    onMouseLeave={() => setHoveredBar(null)}
                     className={cn(
-                      "h-full transition-all duration-500 cursor-pointer hover:opacity-90",
+                      "h-full cursor-pointer relative overflow-hidden",
                       statusBgColors[item.status],
                       index === 0 && "rounded-l-lg",
-                      index === contributionPercentages.length - 1 && "rounded-r-lg"
+                      index === contributionPercentages.length - 1 && "rounded-r-lg",
+                      hoveredBar === item.name && "brightness-110 z-10",
+                      item.isDominant && "ring-2 ring-offset-2 ring-offset-background ring-foreground/20"
                     )}
                     style={{ 
-                      width: `${item.scorePercentage}%`,
-                      minWidth: item.scorePercentage > 0 ? "24px" : "0",
+                      width: isAnimated ? `${item.scorePercentage}%` : "0%",
+                      minWidth: item.scorePercentage > 0 && isAnimated ? "24px" : "0",
+                      transition: `width 800ms cubic-bezier(0.4, 0, 0.2, 1) ${index * 150}ms, filter 200ms ease`,
                     }}
-                  />
+                  >
+                    {/* Shimmer effect on hover */}
+                    {hoveredBar === item.name && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    )}
+                    {/* Dominant indicator */}
+                    {item.isDominant && (
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                        <Crown className="h-4 w-4 text-white/80" />
+                      </div>
+                    )}
+                  </TooltipTrigger>
                 <TooltipContent className="text-xs">
-                  <div className="font-medium">{item.name}</div>
+                  <div className="font-medium flex items-center gap-1">
+                    {item.name}
+                    {item.isDominant && <Badge variant="outline" className="text-[8px] ml-1">Primary Driver</Badge>}
+                  </div>
                   <div className="text-muted-foreground">
                     {item.scorePercentage}% of score ({item.contribution.toFixed(1)} pts)
                   </div>
@@ -136,11 +194,23 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
             {contributionPercentages.map((item) => {
               const Icon = item.icon
               return (
-                <div key={item.name} className="flex items-center gap-1.5">
+                <div 
+                  key={item.name} 
+                  className={cn(
+                    "flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200 cursor-pointer",
+                    hoveredBar === item.name && "bg-muted",
+                    item.isDominant && "ring-1 ring-foreground/10"
+                  )}
+                  onMouseEnter={() => setHoveredBar(item.name)}
+                  onMouseLeave={() => setHoveredBar(null)}
+                >
                   <div className={cn("h-2.5 w-2.5 rounded-sm", statusBgColors[item.status])} />
                   <Icon className="h-3 w-3 text-muted-foreground" />
                   <span className="text-muted-foreground">{item.name}</span>
                   <span className="font-semibold tabular-nums">{item.scorePercentage}%</span>
+                  {item.isDominant && (
+                    <AlertTriangle className="h-3 w-3 text-amber-500 ml-1" />
+                  )}
                 </div>
               )
             })}
@@ -217,19 +287,43 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
 
         {/* Summary Stats */}
         <div className="grid grid-cols-3 gap-3">
-          {data.map((item) => {
+          {data.map((item, index) => {
             const Icon = item.icon
             return (
               <div 
                 key={item.name}
+                onMouseEnter={() => setHoveredBar(item.name)}
+                onMouseLeave={() => setHoveredBar(null)}
                 className={cn(
-                  "rounded-lg border border-border/50 p-3 transition-colors",
-                  "hover:bg-muted/50"
+                  "rounded-lg border border-border/50 p-3 transition-all duration-300 cursor-pointer relative overflow-hidden",
+                  hoveredBar === item.name ? "bg-muted/70 border-border shadow-sm scale-[1.02]" : "hover:bg-muted/50",
+                  item.isDominant && "ring-2 ring-amber-500/30"
                 )}
+                style={{ 
+                  transitionDelay: isAnimated ? `${index * 50}ms` : "0ms",
+                  opacity: isAnimated ? 1 : 0,
+                  transform: isAnimated ? "translateY(0)" : "translateY(10px)",
+                }}
               >
+                {item.isDominant && (
+                  <div className="absolute top-1 right-1">
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "text-[8px] font-semibold px-1.5 py-0",
+                        item.status === "bad" 
+                          ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                      )}
+                    >
+                      Primary
+                    </Badge>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <div className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded",
+                    "flex h-6 w-6 items-center justify-center rounded transition-transform duration-300",
+                    hoveredBar === item.name && "scale-110",
                     item.status === "good" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
                     item.status === "warning" && "bg-amber-500/10 text-amber-600 dark:text-amber-400",
                     item.status === "bad" && "bg-red-500/10 text-red-600 dark:text-red-400"
@@ -246,6 +340,19 @@ export function ContributionChart({ breakdown, score }: ContributionChartProps) 
                 </div>
                 <div className="mt-1 text-[10px] text-muted-foreground">
                   {item.value}
+                </div>
+                {/* Progress bar at bottom */}
+                <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full rounded-full transition-all duration-700",
+                      statusBgColors[item.status]
+                    )}
+                    style={{ 
+                      width: isAnimated ? `${item.percentage}%` : "0%",
+                      transitionDelay: `${index * 150 + 300}ms`,
+                    }}
+                  />
                 </div>
               </div>
             )

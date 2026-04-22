@@ -23,6 +23,8 @@ import { TrendIntelligence } from "@/components/trend-intelligence"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ConfidenceBadge } from "@/components/confidence-badge"
 import { ScoreGauge } from "@/components/score-gauge"
+import { AIInsightsPanel } from "@/components/ai-insights-panel"
+import { ExecutiveSummary } from "@/components/executive-summary"
 import { 
   predictQuality, 
   validateInputs,
@@ -251,6 +253,13 @@ function DashboardContent() {
 
           {/* Right Column - Results */}
           <div className="space-y-6 animate-slide-up" style={{ animationDelay: "150ms" }}>
+            {/* Executive Summary - Compact Overview */}
+            {result && (
+              <div className="animate-fade-in">
+                <ExecutiveSummary result={result} inputValues={inputValues} />
+              </div>
+            )}
+            
             <ResultsCard result={result} previousScore={previousScore} />
             
             {/* Risk Breakdown (Advanced Mode) */}
@@ -260,7 +269,14 @@ function DashboardContent() {
               </div>
             )}
             
-            {/* Contribution Chart - NEW */}
+            {/* AI Insights Panel - NEW */}
+            {result && (
+              <div className="animate-fade-in">
+                <AIInsightsPanel result={result} inputValues={inputValues} />
+              </div>
+            )}
+
+            {/* Contribution Chart */}
             {result && (
               <div className="animate-fade-in">
                 <ContributionChart breakdown={result.breakdown} score={result.score} />
