@@ -48,8 +48,8 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
             <div className="flex items-center gap-1.5">
               <Label htmlFor="commits" className="text-sm font-medium">Commits</Label>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
+                <TooltipTrigger>
+                   <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[200px] text-xs">
                   {tooltips.commits}
