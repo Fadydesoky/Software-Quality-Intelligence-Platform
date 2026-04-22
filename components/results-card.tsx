@@ -3,50 +3,33 @@
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { AlertTriangle, CheckCircle2, AlertCircle, Shield, TrendingUp, Bug, Code2, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PredictionResult } from "@/lib/prediction"
-import { getRiskColor, getRiskBorderColor, getRiskBgColor, getBadgeVariant } from "@/lib/prediction"
+import { getRiskColor, getBadgeVariant } from "@/lib/prediction"
+import { ScoreGauge } from "./score-gauge"
 
 interface ResultsCardProps {
   result: PredictionResult | null
+  previousScore?: number
 }
 
-export function ResultsCard({ result }: ResultsCardProps) {
-  const [animatedScore, setAnimatedScore] = React.useState(0)
-
-  React.useEffect(() => {
-    if (result) {
-      setAnimatedScore(0)
-      const duration = 600
-      const steps = 30
-      const increment = result.score / steps
-      let current = 0
-      
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= result.score) {
-          setAnimatedScore(result.score)
-          clearInterval(timer)
-        } else {
-          setAnimatedScore(Math.round(current))
-        }
-      }, duration / steps)
-      
-      return () => clearInterval(timer)
-    }
-  }, [result])
-
+export function ResultsCard({ result, previousScore }: ResultsCardProps) {
   if (!result) {
     return (
       <Card className="border-border/50 border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
-            <Shield className="h-8 w-8 text-muted-foreground/40" />
+          <div className="relative">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-muted/80 to-muted/30">
+              <Shield className="h-10 w-10 text-muted-foreground/30" />
+            </div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-muted/0 to-muted/0 animate-pulse" />
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Enter metrics and click Predict to see results
+          <p className="mt-6 text-sm font-medium text-muted-foreground">
+            Enter metrics and click Predict
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/60">
+            Results will appear here
           </p>
         </CardContent>
       </Card>
@@ -58,93 +41,105 @@ export function ResultsCard({ result }: ResultsCardProps) {
 
   return (
     <div className="space-y-5">
-      {/* Main Score Card */}
+      {/* Main Score Card with Gauge */}
       <Card className={cn(
-        "border-l-4 transition-all duration-500",
-        getRiskBorderColor(result.risk),
-        getRiskBgColor(result.risk)
+        "overflow-hidden border-border/50",
+        "bg-gradient-to-br from-card via-card to-muted/20"
       )}>
-        <CardContent className="py-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-xl",
-                result.risk === "High" ? "bg-red-500/10" :
-                result.risk === "Medium" ? "bg-amber-500/10" : "bg-emerald-500/10"
-              )}>
-                <RiskIcon className={cn("h-6 w-6", getRiskColor(result.risk))} />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Risk Level</p>
-                <p className={cn("text-2xl font-bold tracking-tight", getRiskColor(result.risk))}>
-                  {result.risk}
-                </p>
-              </div>
-            </div>
-            <Badge variant={badgeVariant} className="text-xs">{badgeLabel}</Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Score Display */}
-      <Card className="border-border/50">
         <CardContent className="py-8">
-          <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Quality Score</p>
-            <div className="mt-3 flex items-baseline justify-center gap-1">
-              <span className="text-6xl font-bold tabular-nums tracking-tighter animate-number">
-                {animatedScore}
-              </span>
-              <span className="text-2xl text-muted-foreground/60">/100</span>
-            </div>
-          </div>
-          <div className="mt-6">
-            <Progress 
-              value={animatedScore} 
-              className="h-2"
-            />
-          </div>
-          <div className="mt-4 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Confidence</span>
-            <span className="font-medium">{result.confidence}%</span>
-          </div>
+          <ScoreGauge
+            score={result.score}
+            previousScore={previousScore}
+            risk={result.risk}
+            confidence={result.confidence}
+            confidenceLevel={result.confidenceLevel}
+            size="md"
+          />
         </CardContent>
       </Card>
 
-      {/* Metrics Grid */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* Quick Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: Bug, label: "Bug Density", value: result.metrics.bugDensity },
-          { icon: TrendingUp, label: "Productivity", value: result.metrics.productivity },
-          { icon: Code2, label: "Complexity", value: `${result.metrics.complexity}/10` },
-          { icon: Users, label: "Coverage", value: `${result.metrics.coverage}%` },
-        ].map(({ icon: Icon, label, value }) => (
-          <Card key={label} className="border-border/50">
-            <CardContent className="flex items-center gap-4 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50">
-                <Icon className="h-5 w-5 text-muted-foreground" />
+          { 
+            icon: Bug, 
+            label: "Bug Density", 
+            value: result.metrics.bugDensity,
+            status: result.breakdown.bugDensity.status,
+          },
+          { 
+            icon: TrendingUp, 
+            label: "Productivity", 
+            value: result.metrics.productivity,
+            suffix: "c/dev",
+            status: "good" as const,
+          },
+          { 
+            icon: Code2, 
+            label: "Complexity", 
+            value: `${result.metrics.complexity}`,
+            suffix: "/10",
+            status: result.breakdown.complexity.status,
+          },
+          { 
+            icon: Users, 
+            label: "Coverage", 
+            value: `${result.metrics.coverage}`,
+            suffix: "%",
+            status: result.breakdown.coverage.status,
+          },
+        ].map(({ icon: Icon, label, value, suffix, status }) => (
+          <Card 
+            key={label} 
+            className={cn(
+              "border-border/50 transition-all hover:border-border hover:shadow-sm",
+              "group"
+            )}
+          >
+            <CardContent className="flex items-center gap-3 py-4">
+              <div className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                status === "good" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+                status === "warning" && "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                status === "bad" && "bg-red-500/10 text-red-600 dark:text-red-400"
+              )}>
+                <Icon className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-                <p className="text-lg font-semibold tabular-nums">{value}</p>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+                <p className="text-base font-bold tabular-nums">
+                  {value}
+                  {suffix && <span className="text-xs font-normal text-muted-foreground">{suffix}</span>}
+                </p>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Reasons */}
+      {/* Areas for Improvement */}
       {result.reasons.length > 0 && (
         <Card className="border-border/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Areas for Improvement</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">Areas for Improvement</CardTitle>
+              <Badge variant="outline" className="text-[10px] font-medium">
+                {result.reasons.length} {result.reasons.length === 1 ? "issue" : "issues"}
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {result.reasons.map((reason, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm">
+                <li 
+                  key={index} 
+                  className={cn(
+                    "flex items-start gap-3 rounded-lg p-3 transition-colors",
+                    "bg-amber-500/5 border border-amber-500/10"
+                  )}
+                >
                   <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                  <span className="text-muted-foreground">{reason}</span>
+                  <span className="text-sm text-foreground/80">{reason}</span>
                 </li>
               ))}
             </ul>
@@ -154,9 +149,18 @@ export function ResultsCard({ result }: ResultsCardProps) {
 
       {result.reasons.length === 0 && (
         <Card className="border-emerald-500/20 bg-emerald-500/5">
-          <CardContent className="flex items-center gap-3 py-4">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-            <p className="text-sm text-emerald-600 dark:text-emerald-400">All metrics are within healthy ranges</p>
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
+              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                All metrics are healthy
+              </p>
+              <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
+                No immediate actions required
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
