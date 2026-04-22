@@ -1,20 +1,27 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import type { HistoryEntry } from "@/lib/prediction"
 
 interface ScoreHistogramProps {
   history: HistoryEntry[]
 }
 
+const colors = [
+  "var(--chart-3)", // 0-20: red/orange
+  "var(--chart-3)", // 21-40: red/orange  
+  "var(--chart-4)", // 41-60: amber
+  "var(--chart-2)", // 61-80: teal
+  "var(--chart-2)", // 81-100: green
+]
+
 export function ScoreHistogram({ history }: ScoreHistogramProps) {
   if (history.length < 2) {
     return null
   }
 
-  // Create histogram buckets
   const buckets = [
     { range: "0-20", min: 0, max: 20, count: 0 },
     { range: "21-40", min: 21, max: 40, count: 0 },
@@ -29,28 +36,43 @@ export function ScoreHistogram({ history }: ScoreHistogramProps) {
   })
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border-border/50">
+      <CardHeader className="pb-4">
         <CardTitle className="text-sm font-medium">Score Distribution</CardTitle>
-        <CardDescription>Distribution of quality scores across all predictions</CardDescription>
+        <p className="text-xs text-muted-foreground">Distribution across all predictions</p>
       </CardHeader>
       <CardContent>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={buckets} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="range" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+            <BarChart data={buckets} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <XAxis 
+                dataKey="range" 
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                allowDecimals={false}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
+                  borderRadius: "8px",
                   fontSize: 12,
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                formatter={(value: number) => [`${value} predictions`, "Count"]}
+                formatter={(value: number) => [`${value} prediction${value !== 1 ? 's' : ''}`, "Count"]}
               />
-              <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} animationDuration={800}>
+                {buckets.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

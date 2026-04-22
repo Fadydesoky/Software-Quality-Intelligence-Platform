@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, Minus, BarChart3, Target, AlertTriangle } from "lucide-react"
 import type { HistoryEntry } from "@/lib/prediction"
 
@@ -19,7 +18,6 @@ export function KPICards({ history }: KPICardsProps) {
   const bestScore = Math.max(...scores)
   const worstScore = Math.min(...scores)
 
-  // Calculate trend (compare last 3 to previous 3)
   let trend: "up" | "down" | "stable" = "stable"
   if (history.length >= 4) {
     const recentAvg = scores.slice(-3).reduce((a, b) => a + b, 0) / 3
@@ -30,59 +28,54 @@ export function KPICards({ history }: KPICardsProps) {
 
   const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus
 
+  const kpis = [
+    {
+      icon: BarChart3,
+      label: "Average Score",
+      value: avgScore,
+      color: "text-foreground",
+      bg: "bg-muted/50",
+    },
+    {
+      icon: Target,
+      label: "Best Score",
+      value: bestScore,
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-500/10",
+    },
+    {
+      icon: AlertTriangle,
+      label: "Worst Score",
+      value: worstScore,
+      color: "text-red-600 dark:text-red-400",
+      bg: "bg-red-500/10",
+    },
+    {
+      icon: TrendIcon,
+      label: "Trend",
+      value: trend.charAt(0).toUpperCase() + trend.slice(1),
+      color: trend === "up" ? "text-emerald-600 dark:text-emerald-400" : trend === "down" ? "text-red-600 dark:text-red-400" : "text-muted-foreground",
+      bg: trend === "up" ? "bg-emerald-500/10" : trend === "down" ? "bg-red-500/10" : "bg-muted/50",
+    },
+  ]
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <BarChart3 className="h-6 w-6 text-primary" />
+      {kpis.map(({ icon: Icon, label, value, color, bg }, index) => (
+        <div
+          key={label}
+          className="group flex items-center gap-4 rounded-xl border border-border/50 bg-card p-4 transition-all hover:border-border hover:shadow-sm"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${bg} transition-transform group-hover:scale-105`}>
+            <Icon className={`h-5 w-5 ${color}`} />
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Average Score</p>
-            <p className="text-2xl font-bold tabular-nums">{avgScore}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+            <p className={`text-xl font-bold tabular-nums ${typeof value === 'number' ? '' : color}`}>{value}</p>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-500/10">
-            <Target className="h-6 w-6 text-emerald-500" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Best Score</p>
-            <p className="text-2xl font-bold tabular-nums">{bestScore}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-500/10">
-            <AlertTriangle className="h-6 w-6 text-red-500" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Worst Score</p>
-            <p className="text-2xl font-bold tabular-nums">{worstScore}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
-            trend === "up" ? "bg-emerald-500/10" : trend === "down" ? "bg-red-500/10" : "bg-muted"
-          }`}>
-            <TrendIcon className={`h-6 w-6 ${
-              trend === "up" ? "text-emerald-500" : trend === "down" ? "text-red-500" : "text-muted-foreground"
-            }`} />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Trend</p>
-            <p className="text-2xl font-bold capitalize">{trend}</p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      ))}
     </div>
   )
 }

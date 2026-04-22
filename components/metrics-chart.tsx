@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import type { PredictionResult } from "@/lib/prediction"
 
 interface MetricsChartProps {
@@ -15,40 +15,43 @@ export function MetricsChart({ result }: MetricsChartProps) {
   }
 
   const data = [
-    { name: "Bugs", value: result.metrics.bugs, fill: "hsl(var(--chart-1))" },
-    { name: "Coverage", value: result.metrics.coverage, fill: "hsl(var(--chart-2))" },
-    { name: "Complexity", value: result.metrics.complexity * 10, fill: "hsl(var(--chart-3))" },
+    { name: "Bugs", value: result.metrics.bugs, fill: "var(--chart-1)" },
+    { name: "Coverage", value: result.metrics.coverage, fill: "var(--chart-2)" },
+    { name: "Complexity", value: result.metrics.complexity * 10, fill: "var(--chart-3)" },
   ]
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
+    <Card className="border-border/50">
+      <CardHeader className="pb-4">
         <CardTitle className="text-sm font-medium">Metrics Overview</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[200px] w-full">
+        <div className="h-[180px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="name" 
-                tick={{ fontSize: 12 }}
-                className="text-muted-foreground"
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={false}
+                tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12 }}
-                className="text-muted-foreground"
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={false}
+                tickLine={false}
               />
               <Tooltip
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
+                  borderRadius: "8px",
                   fontSize: 12,
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
-                labelStyle={{ color: "hsl(var(--foreground))" }}
+                labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 500 }}
               />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={800}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}

@@ -36,7 +36,6 @@ export default function Dashboard() {
   const handlePredict = () => {
     setIsLoading(true)
     
-    // Simulate slight delay for better UX
     setTimeout(() => {
       const prediction = predictQuality(inputValues)
       setResult(prediction)
@@ -51,7 +50,7 @@ export default function Dashboard() {
       
       setHistory(prev => [...prev, entry])
       setIsLoading(false)
-    }, 300)
+    }, 400)
   }
 
   const handleClearHistory = () => {
@@ -82,90 +81,105 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            <span className="font-semibold">Software Quality Predictor</span>
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground">
+              <Activity className="h-5 w-5 text-background" />
+            </div>
+            <span className="text-lg font-semibold tracking-tight">Quality Predictor</span>
           </div>
           <ThemeToggle />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="mx-auto max-w-6xl px-6 py-10">
         {/* KPI Summary */}
-        <KPICards history={history} />
+        <div className="animate-fade-in">
+          <KPICards history={history} />
+        </div>
 
         {/* Main Grid */}
-        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-          {/* Input Panel */}
-          <div className="space-y-4">
-            <InputPanel
-              values={inputValues}
-              onChange={setInputValues}
-              onPredict={handlePredict}
-              isLoading={isLoading}
-            />
+        <div className="mt-8 grid gap-8 lg:grid-cols-[360px_1fr]">
+          {/* Left Column - Input */}
+          <div className="space-y-6">
+            <div className="animate-slide-up" style={{ animationDelay: "50ms" }}>
+              <InputPanel
+                values={inputValues}
+                onChange={setInputValues}
+                onPredict={handlePredict}
+                isLoading={isLoading}
+              />
+            </div>
             
             {/* Live Preview */}
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Live Preview</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Predicted Score</span>
-                <span className="text-2xl font-bold tabular-nums">{liveResult.score}</span>
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-sm">Risk Level</span>
-                <span className={`text-sm font-medium ${
-                  liveResult.risk === "High" ? "text-red-500" : 
-                  liveResult.risk === "Medium" ? "text-amber-500" : "text-emerald-500"
-                }`}>
-                  {liveResult.risk}
-                </span>
+            <div 
+              className="animate-slide-up rounded-xl border border-border/50 bg-muted/30 p-5"
+              style={{ animationDelay: "100ms" }}
+            >
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Live Preview</p>
+              <div className="mt-4 flex items-end justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Predicted Score</p>
+                  <p className="mt-1 text-4xl font-bold tabular-nums tracking-tight">{liveResult.score}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Risk Level</p>
+                  <p className={`mt-1 text-lg font-semibold ${
+                    liveResult.risk === "High" ? "text-red-500" : 
+                    liveResult.risk === "Medium" ? "text-amber-500" : "text-emerald-500"
+                  }`}>
+                    {liveResult.risk}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Results */}
-          <div className="space-y-4">
+          {/* Right Column - Results */}
+          <div className="space-y-6 animate-slide-up" style={{ animationDelay: "150ms" }}>
             <ResultsCard result={result} />
-            <MetricsChart result={result} />
+            {result && <MetricsChart result={result} />}
           </div>
         </div>
 
         {/* Comparison Chart */}
         {comparisonEntries && (
-          <ComparisonChart 
-            entries={comparisonEntries} 
-            onClose={() => {
-              setComparisonEntries(null)
-              setSelectedIds([])
-            }} 
-          />
+          <div className="mt-10 animate-scale-in">
+            <ComparisonChart 
+              entries={comparisonEntries} 
+              onClose={() => {
+                setComparisonEntries(null)
+                setSelectedIds([])
+              }} 
+            />
+          </div>
         )}
 
         {/* Charts Grid */}
         {history.length >= 2 && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 animate-fade-in">
             <TrendChart history={history} />
             <ScoreHistogram history={history} />
           </div>
         )}
 
         {/* History Table */}
-        <HistoryTable
-          history={history}
-          onClear={handleClearHistory}
-          onCompare={handleCompare}
-          selectedIds={selectedIds}
-          onSelect={handleSelect}
-        />
+        <div className="mt-10 animate-fade-in">
+          <HistoryTable
+            history={history}
+            onClear={handleClearHistory}
+            onCompare={handleCompare}
+            selectedIds={selectedIds}
+            onSelect={handleSelect}
+          />
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-6 mt-12">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          Software Quality Predictor - Built for engineering teams
+      <footer className="border-t border-border/40 py-8 mt-16">
+        <div className="mx-auto max-w-6xl px-6 text-center text-sm text-muted-foreground">
+          Built for engineering teams
         </div>
       </footer>
     </div>

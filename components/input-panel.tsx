@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { HelpCircle, Play } from "lucide-react"
+import { Info, Sparkles } from "lucide-react"
 import type { PredictionInput } from "@/lib/prediction"
 
 interface InputPanelProps {
@@ -36,25 +36,23 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
   }
 
   return (
-    <Card className="h-fit">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">Input Metrics</CardTitle>
-        <CardDescription>
-          Enter your software metrics to predict quality risk
-        </CardDescription>
+    <Card className="border-border/50 shadow-sm">
+      <CardHeader className="pb-6">
+        <CardTitle className="text-base font-semibold">Input Metrics</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <CardContent className="space-y-6">
+        {/* Number Inputs Grid */}
+        <div className="grid gap-5 sm:grid-cols-3">
           {/* Commits */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="commits">Commits</Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="commits" className="text-sm font-medium">Commits</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltips.commits}</p>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltips.commits}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -65,20 +63,20 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
               max={10000}
               value={values.commits}
               onChange={handleNumberChange("commits")}
-              className="h-9"
+              className="h-10 bg-background transition-shadow focus:shadow-sm"
             />
           </div>
 
           {/* Bugs */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="bugs">Bugs</Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="bugs" className="text-sm font-medium">Bugs</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltips.bugs}</p>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltips.bugs}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -89,20 +87,20 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
               max={1000}
               value={values.bugs}
               onChange={handleNumberChange("bugs")}
-              className="h-9"
+              className="h-10 bg-background transition-shadow focus:shadow-sm"
             />
           </div>
 
           {/* Developers */}
-          <div className="space-y-2 sm:col-span-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="developers">Developers</Label>
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="developers" className="text-sm font-medium">Developers</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltips.developers}</p>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltips.developers}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -113,26 +111,31 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
               max={100}
               value={values.developers}
               onChange={handleNumberChange("developers")}
-              className="h-9"
+              className="h-10 bg-background transition-shadow focus:shadow-sm"
             />
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-border/50" />
+
         {/* Complexity Slider */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Label>Complexity</Label>
+            <div className="flex items-center gap-1.5">
+              <Label className="text-sm font-medium">Complexity</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltips.complexity}</p>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltips.complexity}
                 </TooltipContent>
               </Tooltip>
             </div>
-            <span className="text-sm font-medium tabular-nums">{values.complexity}</span>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-sm font-semibold tabular-nums">
+              {values.complexity}
+            </span>
           </div>
           <Slider
             value={[values.complexity]}
@@ -142,27 +145,29 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
             step={1}
             className="py-1"
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>Simple</span>
             <span>Complex</span>
           </div>
         </div>
 
         {/* Coverage Slider */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Label>Test Coverage</Label>
+            <div className="flex items-center gap-1.5">
+              <Label className="text-sm font-medium">Test Coverage</Label>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground/60 cursor-help transition-colors hover:text-muted-foreground" />
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltips.coverage}</p>
+                <TooltipContent side="top" className="max-w-[200px] text-xs">
+                  {tooltips.coverage}
                 </TooltipContent>
               </Tooltip>
             </div>
-            <span className="text-sm font-medium tabular-nums">{values.coverage}%</span>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-sm font-semibold tabular-nums">
+              {values.coverage}%
+            </span>
           </div>
           <Slider
             value={[values.coverage]}
@@ -172,15 +177,18 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
             step={1}
             className="py-1"
           />
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>0%</span>
             <span>100%</span>
           </div>
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-border/50" />
+
         <Button 
           onClick={onPredict} 
-          className="w-full mt-4" 
+          className="w-full h-11 font-medium transition-all hover:shadow-md" 
           disabled={isLoading}
         >
           {isLoading ? (
@@ -190,7 +198,7 @@ export function InputPanel({ values, onChange, onPredict, isLoading }: InputPane
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <Play className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
               Predict Quality
             </span>
           )}

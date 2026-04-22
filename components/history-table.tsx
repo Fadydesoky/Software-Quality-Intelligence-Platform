@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Download, Trash2, GitCompare } from "lucide-react"
+import { Download, Trash2, GitCompare, History } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { HistoryEntry } from "@/lib/prediction"
-import { getRiskColor } from "@/lib/prediction"
 
 interface HistoryTableProps {
   history: HistoryEntry[]
@@ -46,16 +45,16 @@ export function HistoryTable({ history, onClear, onCompare, selectedIds, onSelec
 
   if (history.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Prediction History</CardTitle>
-          <CardDescription>
-            Your prediction history will appear here
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No predictions yet. Run your first analysis to see results here.
+      <Card className="border-border/50 border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/50">
+            <History className="h-7 w-7 text-muted-foreground/40" />
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            No predictions yet
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/60">
+            Run your first analysis to see results here
           </p>
         </CardContent>
       </Card>
@@ -63,13 +62,13 @@ export function HistoryTable({ history, onClear, onCompare, selectedIds, onSelec
   }
 
   return (
-    <Card>
+    <Card className="border-border/50">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div>
-          <CardTitle className="text-lg">Prediction History</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-base font-semibold">Prediction History</CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
             {history.length} prediction{history.length !== 1 ? "s" : ""} recorded
-          </CardDescription>
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {selectedIds.length > 0 && (
@@ -78,35 +77,36 @@ export function HistoryTable({ history, onClear, onCompare, selectedIds, onSelec
               size="sm"
               onClick={() => canCompare && onCompare(selectedIds as [string, string])}
               disabled={!canCompare}
+              className="h-8 text-xs"
             >
-              <GitCompare className="h-4 w-4 mr-2" />
+              <GitCompare className="h-3.5 w-3.5 mr-1.5" />
               Compare ({selectedIds.length}/2)
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={exportCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
+          <Button variant="outline" size="sm" onClick={exportCSV} className="h-8 text-xs">
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Export
           </Button>
-          <Button variant="outline" size="sm" onClick={onClear}>
-            <Trash2 className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={onClear} className="h-8 text-xs text-muted-foreground hover:text-destructive">
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Clear
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="rounded-md border overflow-x-auto">
+      <CardContent className="pt-0">
+        <div className="rounded-lg border border-border/50 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 <TableHead className="w-10"></TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead className="text-right">Commits</TableHead>
-                <TableHead className="text-right">Bugs</TableHead>
-                <TableHead className="text-right">Complexity</TableHead>
-                <TableHead className="text-right">Developers</TableHead>
-                <TableHead className="text-right">Coverage</TableHead>
-                <TableHead>Risk</TableHead>
-                <TableHead className="text-right">Score</TableHead>
+                <TableHead className="text-xs font-medium">Time</TableHead>
+                <TableHead className="text-xs font-medium text-right">Commits</TableHead>
+                <TableHead className="text-xs font-medium text-right">Bugs</TableHead>
+                <TableHead className="text-xs font-medium text-right">Complexity</TableHead>
+                <TableHead className="text-xs font-medium text-right">Devs</TableHead>
+                <TableHead className="text-xs font-medium text-right">Coverage</TableHead>
+                <TableHead className="text-xs font-medium">Risk</TableHead>
+                <TableHead className="text-xs font-medium text-right">Score</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -115,36 +115,45 @@ export function HistoryTable({ history, onClear, onCompare, selectedIds, onSelec
                   key={entry.id} 
                   className={cn(
                     "cursor-pointer transition-colors",
-                    selectedIds.includes(entry.id) && "bg-muted"
+                    selectedIds.includes(entry.id) && "bg-muted/50"
                   )}
                   onClick={() => onSelect(entry.id)}
                 >
-                  <TableCell>
+                  <TableCell className="py-3">
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(entry.id)}
                       onChange={() => onSelect(entry.id)}
-                      className="h-4 w-4 rounded border-muted-foreground"
+                      className="h-4 w-4 rounded border-border accent-primary"
                       onClick={(e) => e.stopPropagation()}
                     />
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm">
-                    {new Date(entry.timestamp).toLocaleString()}
+                  <TableCell className="py-3 whitespace-nowrap text-xs text-muted-foreground">
+                    {new Date(entry.timestamp).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{entry.commits}</TableCell>
-                  <TableCell className="text-right tabular-nums">{entry.bugs}</TableCell>
-                  <TableCell className="text-right tabular-nums">{entry.complexity}</TableCell>
-                  <TableCell className="text-right tabular-nums">{entry.developers}</TableCell>
-                  <TableCell className="text-right tabular-nums">{entry.coverage}%</TableCell>
-                  <TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums">{entry.commits}</TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums">{entry.bugs}</TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums">{entry.complexity}</TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums">{entry.developers}</TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums">{entry.coverage}%</TableCell>
+                  <TableCell className="py-3">
                     <Badge 
-                      variant={entry.risk === "High" ? "destructive" : entry.risk === "Medium" ? "secondary" : "default"}
-                      className={cn("font-medium", getRiskColor(entry.risk))}
+                      variant={entry.risk === "High" ? "destructive" : "secondary"}
+                      className={cn(
+                        "text-[10px] font-medium px-1.5 py-0",
+                        entry.risk === "Low" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20",
+                        entry.risk === "Medium" && "bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                      )}
                     >
                       {entry.risk}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right tabular-nums font-medium">{entry.score}</TableCell>
+                  <TableCell className="py-3 text-right text-xs tabular-nums font-semibold">{entry.score}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

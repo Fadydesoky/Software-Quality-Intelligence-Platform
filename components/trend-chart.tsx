@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 import type { HistoryEntry } from "@/lib/prediction"
 
 interface TrendChartProps {
@@ -21,43 +21,59 @@ export function TrendChart({ history }: TrendChartProps) {
   }))
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Risk Trend Over Time</CardTitle>
-        <CardDescription>Quality score progression across predictions</CardDescription>
+    <Card className="border-border/50">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-sm font-medium">Score Trend</CardTitle>
+        <p className="text-xs text-muted-foreground">Quality progression over time</p>
       </CardHeader>
       <CardContent>
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <LineChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="time" 
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 interval="preserveStartEnd"
+                axisLine={false}
+                tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 12 }} 
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
                 domain={[0, 100]}
+                axisLine={false}
+                tickLine={false}
               />
               <Tooltip
+                cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "4 4" }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
+                  borderRadius: "8px",
                   fontSize: 12,
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
                 formatter={(value: number) => [`${value}`, "Score"]}
               />
-              <ReferenceLine y={75} stroke="hsl(142.1 76.2% 36.3%)" strokeDasharray="3 3" label={{ value: "Low Risk", position: "right", fontSize: 10 }} />
-              <ReferenceLine y={50} stroke="hsl(45.4 93.4% 47.5%)" strokeDasharray="3 3" label={{ value: "Medium", position: "right", fontSize: 10 }} />
+              <ReferenceLine 
+                y={75} 
+                stroke="hsl(142.1 76.2% 36.3%)" 
+                strokeDasharray="4 4" 
+                strokeOpacity={0.5}
+              />
+              <ReferenceLine 
+                y={50} 
+                stroke="hsl(45.4 93.4% 47.5%)" 
+                strokeDasharray="4 4" 
+                strokeOpacity={0.5}
+              />
               <Line 
                 type="monotone" 
                 dataKey="score" 
-                stroke="hsl(var(--primary))" 
+                stroke="hsl(var(--foreground))" 
                 strokeWidth={2}
-                dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
+                dot={{ fill: "hsl(var(--background))", stroke: "hsl(var(--foreground))", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: "hsl(var(--foreground))" }}
+                animationDuration={800}
               />
             </LineChart>
           </ResponsiveContainer>
