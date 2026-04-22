@@ -74,14 +74,12 @@ def predict_quality(commits, bugs, complexity, developers, coverage):
     )
 
     reasons = []
-    if coverage < 50:
-        reasons.append("Low test coverage")
-    if bug_density > 0.3:
-        reasons.append("High bug density")
-    if complexity > 7:
-        reasons.append("High code complexity")
-    if productivity < 20:
-        reasons.append("Low developer productivity")
+if score < 40:
+    final_risk = "High"
+elif score < 70:
+    final_risk = "Medium"
+else:
+    final_risk = "Low"
 
     return {
         "risk": final_risk,
