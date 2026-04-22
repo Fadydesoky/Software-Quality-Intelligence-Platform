@@ -4,7 +4,7 @@
 
 Stop guessing about code health. Get a clear quality score, understand the risk, and know exactly what to fix — in seconds.
 
-[Live Demo](https://ai-software-quality-flax.vercel.app/) · [Get Started](#getting-started)
+[Live Demo](https://qualioro.vercel.app/) · [Get Started](#getting-started)
 
 ---
 
