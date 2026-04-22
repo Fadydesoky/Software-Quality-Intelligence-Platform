@@ -21,7 +21,12 @@ data["coverage"] = data["coverage"].clip(10, 100)
 data["bug_density"] = data["bugs"] / data["commits"]
 data["productivity"] = data["commits"] / data["developers"]
 
-data["risk_score"] = (
+X = data.copy()
+
+le = LabelEncoder()
+
+# temporary risk generation for training
+risk_score = (
     data["bug_density"] * 0.5 +
     data["complexity"] * 0.3 -
     data["coverage"] * 0.2
@@ -34,16 +39,12 @@ def classify_risk(score):
         return "Medium"
     return "High"
 
-data["risk"] = data["risk_score"].apply(classify_risk)
-
-X = data.drop(["risk", "risk_score"], axis=1)
-y = data["risk"]
-
-le = LabelEncoder()
+y = risk_score.apply(classify_risk)
 y_enc = le.fit_transform(y)
 
 model = RandomForestClassifier(n_estimators=120, random_state=42)
 model.fit(X, y_enc)
+
 
 def predict_quality(commits, bugs, complexity, developers, coverage):
     bug_density = bugs / max(commits, 1)
@@ -59,27 +60,32 @@ def predict_quality(commits, bugs, complexity, developers, coverage):
         "productivity": productivity
     }])
 
-    pred = model.predict(row)
-    model_risk = le.inverse_transform(pred)[0]
-
-    if coverage < 50 and bug_density > 0.3:
-        final_risk = "High"
-    elif coverage < 60:
-        final_risk = "Medium"
-    else:
-        final_risk = model_risk
-
+    # score calculation (core reference)
     score = int(
-        max(0, min(100, 100 - (bug_density * 100 + complexity * 5 - coverage * 0.7)))
+        max(0, min(100, 100 - (
+            bug_density * 100 +
+            complexity * 5 -
+            coverage * 0.7
+        )))
     )
 
+    # unified risk logic based on score
+    if score < 40:
+        final_risk = "High"
+    elif score < 70:
+        final_risk = "Medium"
+    else:
+        final_risk = "Low"
+
     reasons = []
-if score < 40:
-    final_risk = "High"
-elif score < 70:
-    final_risk = "Medium"
-else:
-    final_risk = "Low"
+    if coverage < 50:
+        reasons.append("Low test coverage")
+    if bug_density > 0.3:
+        reasons.append("High bug density")
+    if complexity > 7:
+        reasons.append("High code complexity")
+    if productivity < 20:
+        reasons.append("Low developer productivity")
 
     return {
         "risk": final_risk,
